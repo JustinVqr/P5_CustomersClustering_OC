@@ -1,0 +1,30 @@
+Requête n°1
+En excluant les commandes annulées, quelles sont les commandes récentes de moins de 3 mois que les clients ont reçues avec au moins 3 jours de retard ?
+
+
+WITH recent_orders AS (
+    SELECT 
+        order_id,
+        order_status,
+        date(order_estimated_delivery_date) AS estimated_delivery_date, -- Conversion en date estimée de livraison
+        date(order_delivered_customer_date) AS delivered_customer_date -- Conversion en date de livraison réelle
+    FROM orders
+    WHERE order_status != 'canceled' -- Exclut les commandes annulées
+      AND order_delivered_customer_date IS NOT NULL -- Exclut les commandes sans date de livraison
+)
+-- Sélectionne toutes les colonnes de recent_orders avec une colonne supplémentaire pour la différence de jours
+SELECT 
+    *,
+    julianday(delivered_customer_date) - julianday(estimated_delivery_date) AS days_difference
+FROM recent_orders
+-- Filtre les commandes des trois mois précédents avec un retard de trois jours ou plus
+WHERE delivered_customer_date >= date('2018-10-17', '-3 months') -- Date maximale moins trois mois
+  AND delivered_customer_date <= '2018-10-17' -- Date maximale
+  AND days_difference >= 3
+
+
+
+
+
+
+
